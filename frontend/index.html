@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Pintar - Game Pengetahuan untuk Anak SD</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #ec4899 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        
+        .header p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .score-board {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .score-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .trophy-icon {
+            background: #facc15;
+            border-radius: 50%;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-text h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .score-text p {
+            font-size: 1.875rem;
+            font-weight: bold;
+        }
+        
+        .reset-btn {
+            background: #ef4444;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .reset-btn:hover {
+            background: #dc2626;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-badge span {
+            font-size: 1.875rem;
+        }
+        
+        .category-badge .badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            width: 4rem;
+            height: 4rem;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .question-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .answer-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            outline: none;
+            transition: border-color 0.3s;
+            margin-bottom: 1.5rem;
+        }
+        
+        .answer-input:focus {
+            border-color: #3b82f6;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        .submit-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .result-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-correct {
+            background: #dcfce7;
+        }
+        
+        .result-incorrect {
+            background: #fee2e2;
+        }
+        
+        .result-message {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .result-text {
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .next-btn {
+            width: 100%;
+            background: #a855f7;
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .next-btn:hover {
+            background: #9333ea;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+            color: #6b7280;
+        }
+        
+        .categories {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .categories h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .category-btn {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: capitalize;
+        }
+        
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .random-btn {
+            background: linear-gradient(45deg, #facc15, #f97316);
+            color: white;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .random-btn:hover {
+            background: linear-gradient(45deg, #eab308, #ea580c);
+        }
+        
+        .text-green { color: #10b981; }
+        .text-yellow { color: #f59e0b; }
+        .text-red { color: #ef4444; }
+        .text-gray { color: #6b7280; }
+        
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .icon-large {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .icon-xl {
+            width: 64px;
+            height: 64px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .score-board {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i data-lucide="brain" class="icon-large" style="color: #fde047;"></i>
+                Quiz Pintar
+                <i data-lucide="sparkles" class="icon-large" style="color: #fde047;"></i>
+            </h1>
+            <p>Game Pengetahuan untuk Anak SD</p>
+        </div>
+
+        <!-- Score Board -->
+        <div class="score-board">
+            <div class="score-info">
+                <div class="trophy-icon">
+                    <i data-lucide="trophy" class="icon" style="color: #92400e;"></i>
+                </div>
+                <div class="score-text">
+                    <h2>Skor Kamu</h2>
+                    <p id="score-display" class="text-gray">0 / 0</p>
+                    <div id="streak-display" style="font-size: 0.875rem; color: rgba(255,255,255,0.8); margin-top: 0.25rem;">
+                        Streak: <span id="current-streak">0</span> | Best: <span id="best-streak">0</span>
+                    </div>
+                </div>
+            </div>
+            <button class="reset-btn" onclick="resetScore()">
+                <i data-lucide="rotate-ccw" class="icon"></i>
+                Reset
+            </button>
+        </div>
+
+        <!-- Question Card -->
+        <div class="question-card">
+            <div id="category-badge" class="category-badge" style="display: none;">
+                <span id="category-icon">📚</span>
+                <span id="category-name" class="badge">kategori</span>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Sedang membuat soal...</p>
+            </div>
+
+            <div id="question-content" style="display: none;">
+                <h3 id="question-title" class="question-title"></h3>
+                
+                <div id="answer-section">
+                    <input type="text" id="answer-input" class="answer-input" placeholder="Ketik jawabanmu di sini..." />
+                    <button id="submit-btn" class="submit-btn" onclick="checkAnswer()">Kirim Jawaban</button>
+                </div>
+
+                <div id="result-section" style="display: none;">
+                    <div id="result-card" class="result-card">
+                        <p id="result-message" class="result-message"></p>
+                        <p id="user-answer" class="result-text"></p>
+                        <p id="correct-answer" class="result-text" style="display: none;"></p>
+                    </div>
+                    <button class="next-btn" onclick="generateQuestion()">Soal Berikutnya</button>
+                </div>
+            </div>
+
+            <div id="empty-state" class="empty-state">
+                <i data-lucide="book-open" class="icon-xl" style="color: #9ca3af; margin-bottom: 1rem;"></i>
+                <p>Tekan tombol untuk mulai quiz!</p>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="categories">
+            <h3>Pilih Kategori:</h3>
+            <div class="categories-grid">
+                <button class="category-btn" onclick="generateQuestion('matematika dasar')">
+                    <span>🔢</span>
+                    matematika dasar
+                </button>
+                <button class="category-btn" onclick="generateQuestion('bahasa indonesia')">
+                    <span>📝</span>
+                    bahasa indonesia
+                </button>
+                <button class="category-btn" onclick="generateQuestion('ilmu pengetahuan alam')">
+                    <span>🔬</span>
+                    ilmu pengetahuan alam
+                </button>
+                <button class="category-btn" onclick="generateQuestion('sejarah indonesia')">
+                    <span>📜</span>
+                    sejarah indonesia
+                </button>
+                <button class="category-btn" onclick="generateQuestion('geografi indonesia')">
+                    <span>🌍</span>
+                    geografi indonesia
+                </button>
+                <button class="random-btn" onclick="generateQuestion()">
+                    <i data-lucide="star" class="icon"></i>
+                    Acak
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentQuestion = '';
+        let currentCategory = '';
+        let score = 0;
+        let totalQuestions = 0;
+        let wrongAnswers = 0;
+        let currentStreak = 0;
+        let bestStreak = 0;
+        let lastResult = null;
+        
+        const categories = [
+            'matematika dasar',
+            'bahasa indonesia', 
+            'ilmu pengetahuan alam',
+            'sejarah indonesia',
+            'geografi indonesia'
+        ];
+
+        const questions = {
+            'matematika dasar': [
+                'Soal: Berapa hasil dari 15 + 27?',
+                'Soal: Jika ada 24 apel dan dimakan 9, berapa sisa apelnya?',
+                'Soal: Berapa hasil dari 8 × 7?'
+            ],
+            'bahasa indonesia': [
+                'Soal: Apa sinonim dari kata "gembira"?',
+                'Soal: Apa antonim dari kata "tinggi"?',
+                'Soal: Apa arti dari kata "rajin"?'
+            ],
+            'ilmu pengetahuan alam': [
+                'Soal: Hewan apa yang bernapas dengan insang?',
+                'Soal: Tumbuhan apa yang bisa makan serangga?',
+                'Soal: Planet apa yang terdekat dengan matahari?'
+            ],
+            'sejarah indonesia': [
+                'Soal: Siapa proklamator kemerdekaan Indonesia?',
+                'Soal: Kapan Indonesia merdeka?',
+                'Soal: Siapa pahlawan wanita dari Aceh?'
+            ],
+            'geografi indonesia': [
+                'Soal: Apa ibu kota Indonesia?',
+                'Soal: Pulau apa yang terbesar di Indonesia?',
+                'Soal: Gunung apa yang tertinggi di Indonesia?'
+            ]
+        };
+
+        const correctAnswers = {
+            'Soal: Berapa hasil dari 15 + 27?': '42',
+            'Soal: Jika ada 24 apel dan dimakan 9, berapa sisa apelnya?': '15',
+            'Soal: Berapa hasil dari 8 × 7?': '56',
+            'Soal: Apa sinonim dari kata "gembira"?': 'senang',
+            'Soal: Apa antonim dari kata "tinggi"?': 'rendah',
+            'Soal: Apa arti dari kata "rajin"?': 'tekun',
+            'Soal: Hewan apa yang bernapas dengan insang?': 'ikan',
+            'Soal: Tumbuhan apa yang bisa makan serangga?': 'kantong semar',
+            'Soal: Planet apa yang terdekat dengan matahari?': 'merkurius',
+            'Soal: Siapa proklamator kemerdekaan Indonesia?': 'soekarno',
+            'Soal: Kapan Indonesia merdeka?': '17 agustus 1945',
+            'Soal: Siapa pahlawan wanita dari Aceh?': 'cut nyak dhien',
+            'Soal: Apa ibu kota Indonesia?': 'jakarta',
+            'Soal: Pulau apa yang terbesar di Indonesia?': 'kalimantan',
+            'Soal: Gunung apa yang tertinggi di Indonesia?': 'puncak jaya'
+        };
+
+        function getCategoryIcon(category) {
+            switch (category) {
+                case 'matematika dasar': return '🔢';
+                case 'bahasa indonesia': return '📝';
+                case 'ilmu pengetahuan alam': return '🔬';
+                case 'sejarah indonesia': return '📜';
+                case 'geografi indonesia': return '🌍';
+                default: return '📚';
+            }
+        }
+
+        function getScoreColor() {
+            if (totalQuestions === 0) return 'text-gray';
+            const percentage = Math.round((score / totalQuestions) * 100);
+            if (percentage >= 80) return 'text-green';
+            if (percentage >= 60) return 'text-yellow';
+            return 'text-red';
+        }
+
+        function updateScoreDisplay() {
+            const scoreDisplay = document.getElementById('score-display');
+            if (totalQuestions === 0) {
+                scoreDisplay.textContent = '0 / 0';
+                scoreDisplay.className = 'text-gray';
+            } else {
+                const percentage = Math.round((score / totalQuestions) * 100);
+                scoreDisplay.textContent = `${score} / ${totalQuestions} (${percentage}%)`;
+                scoreDisplay.className = getScoreColor();
+            }
+        }
+
+        function getSuccessMessage(isCorrect) {
+            if (isCorrect) {
+                const messages = [
+                    "🎉 Benar! Kamu hebat!",
+                    "👏 Bagus sekali!",
+                    "⭐ Jawaban yang tepat!",
+                    "🌟 Keren banget!",
+                    "💫 Pintar sekali!"
+                ];
+                return messages[Math.floor(Math.random() * messages.length)];
+            } else {
+                const messages = [
+                    "❌ Belum tepat. Jangan menyerah, coba lagi!",
+                    "💪 Hampir benar! Terus belajar ya!",
+                    "🤔 Belum tepat, tapi jangan patah semangat!",
+                    "📚 Belajar lagi yuk! Kamu pasti bisa!",
+                    "🎯 Belum kena sasaran, tapi terus coba!"
+                ];
+                return messages[Math.floor(Math.random() * messages.length)];
+            }
+        }
+
+        function normalizeAnswer(answer) {
+            return answer.trim().toLowerCase();
+        }
+
+        function isAnswerCorrect(userAnswer, correctAnswer) {
+            const normalizedUser = normalizeAnswer(userAnswer);
+            const normalizedCorrect = normalizeAnswer(correctAnswer);
+            
+            // Check exact match first
+            if (normalizedUser === normalizedCorrect) {
+                return true;
+            }
+            
+            // Check if user answer contains correct answer (for flexible matching)
+            return normalizedUser.includes(normalizedCorrect) || 
+                   normalizedCorrect.includes(normalizedUser);
+        }
+
+        async function generateQuestion(category = null) {
+            // Hide result section
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('answer-section').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('question-content').style.display = 'none';
+            
+            // Clear input
+            document.getElementById('answer-input').value = '';
+            
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const selectedCategory = category || categories[Math.floor(Math.random() * categories.length)];
+            const questionList = questions[selectedCategory];
+            const randomQuestion = questionList[Math.floor(Math.random() * questionList.length)];
+            
+            currentQuestion = randomQuestion;
+            currentCategory = selectedCategory;
+            
+            // Update UI
+            document.getElementById('category-icon').textContent = getCategoryIcon(selectedCategory);
+            document.getElementById('category-name').textContent = selectedCategory;
+            document.getElementById('question-title').textContent = randomQuestion;
+            
+            // Hide loading, show content
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('question-content').style.display = 'block';
+            document.getElementById('category-badge').style.display = 'flex';
+            
+            // Focus on input
+            document.getElementById('answer-input').focus();
+        }
+
+        async function checkAnswer() {
+            const userAnswer = document.getElementById('answer-input').value.trim();
+            if (!userAnswer) return;
+
+            // Show loading on button
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.textContent = 'Memeriksa...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            const correctAnswer = correctAnswers[currentQuestion] || '';
+            const isCorrect = isAnswerCorrect(userAnswer, correctAnswer);
+
+            // Update counters
+            totalQuestions++;
+            if (isCorrect) {
+                score++;
+                currentStreak++;
+                if (currentStreak > bestStreak) {
+                    bestStreak = currentStreak;
+                }
+            } else {
+                wrongAnswers++;
+                currentStreak = 0;
+            }
+            
+            lastResult = {
+                isCorrect,
+                correctAnswer,
+                message: getSuccessMessage(isCorrect),
+                userAnswer,
+                streak: currentStreak
+            };
+            
+            // Update UI
+            updateScoreDisplay();
+            showResult();
+            
+            // Reset button
+            submitBtn.textContent = 'Kirim Jawaban';
+            submitBtn.disabled = false;
+        }
+
+        function showResult() {
+            document.getElementById('answer-section').style.display = 'none';
+            document.getElementById('result-section').style.display = 'block';
+            
+            const resultCard = document.getElementById('result-card');
+            const resultMessage = document.getElementById('result-message');
+            const userAnswerEl = document.getElementById('user-answer');
+            const correctAnswerEl = document.getElementById('correct-answer');
+            
+            resultCard.className = lastResult.isCorrect ? 'result-card result-correct' : 'result-card result-incorrect';
+            
+            let message = lastResult.message;
+            if (lastResult.isCorrect && lastResult.streak > 1) {
+                message += ` 🔥 Streak ${lastResult.streak}!`;
+            }
+            
+            resultMessage.textContent = message;
+            userAnswerEl.innerHTML = `<strong>Jawaban kamu:</strong> ${lastResult.userAnswer}`;
+            
+            if (!lastResult.isCorrect) {
+                correctAnswerEl.innerHTML = `<strong>Jawaban yang benar:</strong> ${lastResult.correctAnswer}`;
+                correctAnswerEl.style.display = 'block';
+            } else {
+                correctAnswerEl.style.display = 'none';
+            }
+            
+            // Update streak display
+            updateStreakDisplay();
+        }
+
+        function updateStreakDisplay() {
+            document.getElementById('current-streak').textContent = currentStreak;
+            document.getElementById('best-streak').textContent = bestStreak;
+        }
+
+        function resetScore() {
+            score = 0;
+            totalQuestions = 0;
+            wrongAnswers = 0;
+            currentStreak = 0;
+            // bestStreak is intentionally not reset to keep the all-time record
+            lastResult = null;
+            currentQuestion = '';
+            currentCategory = '';
+            
+            updateScoreDisplay();
+            updateStreakDisplay();
+            
+            // Reset UI
+            document.getElementById('question-content').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('category-badge').style.display = 'none';
+            document.getElementById('answer-input').value = '';
+        }
+
+        // Enter key support
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('answer-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+            
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            // Initialize displays
+            updateScoreDisplay();
+            updateStreakDisplay();
+            
+            // Generate first question
+            generateQuestion();
+        });
+    </script>
+</body>
+</html>
